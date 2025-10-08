@@ -7,7 +7,27 @@
 
 #include "main.h"
 
+uint32_t intrCount = 0;
+
+uint8_t getSign() {
+    return 0; // just return positive for now
+} 
+
+// Function used by printf to send characters to the laptop
+int _write(int file, char *ptr, int len) {
+  int i = 0;
+  for (i = 0; i < len; i++) {
+    ITM_SendChar((*ptr++));
+  }
+  return len;
+}
+
 int main(void) {
+
+    float    pulses    = 0;
+    float    rps       = 0;
+    uint8_t  sign      = 0;
+
 
     // Enable both quad encoders as input
     gpioEnable(GPIO_PORT_A);
@@ -28,7 +48,6 @@ int main(void) {
     // Enable interrupts globally
     __enable_irq();
 
-    // TODO: Configure interrupt for falling edge of GPIO pin for button
     // 1. Configure mask bits
     EXTI->IMR1 |= (1 << gpioPinOffset(QA_PIN)); // Configure the mask bit for Quad A
     EXTI->IMR1 |= (1 << gpioPinOffset(QB_PIN)); // Configure the mask bit for Quad B
@@ -46,8 +65,11 @@ int main(void) {
 
     while(1){   
         delay_millis(TIM2, 200);
-
-        // do something
+        pulses = intrCount / 4.0;
+        sign = getSign();
+        rps = (pulses / PPR) / (SAMPLE_PERIOD / 1000);
+        rps = sign ? -rps : rps;
+        intrCount = 0;
     }
 
 }
@@ -58,8 +80,10 @@ void EXTI15_10_IRQHandler(void){
         // If so, clear the interrupt (NB: Write 1 to reset.)
         EXTI->PR1 |= (1 << gpioPinOffset(QB_PIN));
 
-        // do something
+        intrCount++;
 
+        // do something to keep track of direction
+        
     } 
 }
 
@@ -68,8 +92,9 @@ void EXTI9_5_IRQHandler(void){
     if (EXTI->PR1 & (1 << gpioPinOffset(QA_PIN))){
         // If so, clear the interrupt (NB: Write 1 to reset.)
         EXTI->PR1 |= (1 << gpioPinOffset(QA_PIN));
-
-        // do something
+        
+        intrCount++;
+        // do something to keep track of direction
 
     } 
 }
