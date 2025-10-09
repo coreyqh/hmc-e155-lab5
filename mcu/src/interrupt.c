@@ -76,7 +76,7 @@ int main(void) {
         rps = (pulses / PPR) / (SAMPLE_PERIOD / 1000.0);
         rps = sign ? -rps : rps;
         intrCount = 0;
-        //printf("Angular Velocity is %.5f RPS\n", rps);
+        printf("Angular Velocity is %.5f RPS\n", rps);
         //printf("%d", digitalRead(PA10));
     }
 
@@ -89,7 +89,7 @@ void EXTI15_10_IRQHandler(void){
         EXTI->PR1 |= (1 << gpioPinOffset(QB_PIN));
 
         intrCount++;
-        printf("B interrupt!!\n");
+        // printf("B interrupt!!\n");
 
         // do something to keep track of direction
         
@@ -103,7 +103,7 @@ void EXTI9_5_IRQHandler(void){
         EXTI->PR1 |= (1 << gpioPinOffset(QA_PIN));
         
         intrCount++;
-        printf("A interrupt!!\n");
+        // printf("A interrupt!!\n");
         // do something to keep track of direction
 
     } 
