@@ -7,7 +7,7 @@
 
 #include "main.h"
 
-uint32_t intrCount = 0;
+int32_t intrCount = 0;
 
 uint8_t getSign() {
     return 0; // just return positive for now
@@ -33,7 +33,10 @@ int main(void) {
     gpioEnable(GPIO_PORT_A);
     pinMode(QA_PIN, GPIO_INPUT);
     pinMode(QB_PIN, GPIO_INPUT);
-    // GPIOA->PUPDR |= _VAL2FLD(GPIO_PUPDR_PUPD2, 0b01); // Set PA2 as pull-up
+    GPIOA->PUPDR &= ~(0b11 << gpioPinOffset(QA_PIN));// reset pull up/down 
+    GPIOA->PUPDR &= ~(0b11 << gpioPinOffset(QB_PIN));// reset pull up/down 
+    GPIOA->PUPDR |= (0b01 << gpioPinOffset(QA_PIN));// set pull up
+    GPIOA->PUPDR |= (0b01 << gpioPinOffset(QB_PIN));// set pull up
 
     // Initialize timer
     RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN;
@@ -42,11 +45,14 @@ int main(void) {
     // 1. Enable SYSCFG clock domain in RCC
     RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
     // 2. Configure EXTICR for the input button interrupt
-    SYSCFG->EXTICR[3] |= _VAL2FLD(SYSCFG_EXTICR3_EXTI10, 0b000); // Select PA10
-    SYSCFG->EXTICR[3] |= _VAL2FLD(SYSCFG_EXTICR3_EXTI8,  0b000); // Select PA8
+    SYSCFG->EXTICR[2] |= _VAL2FLD(SYSCFG_EXTICR3_EXTI10, 0b000); // Select PA10
+    SYSCFG->EXTICR[2] |= _VAL2FLD(SYSCFG_EXTICR3_EXTI8,  0b000); // Select PA8
 
     // Enable interrupts globally
     __enable_irq();
+    __NVIC_EnableIRQ(EXTI15_10_IRQn);
+    __NVIC_EnableIRQ(EXTI9_5_IRQn);
+
 
     // 1. Configure mask bits
     EXTI->IMR1 |= (1 << gpioPinOffset(QA_PIN)); // Configure the mask bit for Quad A
@@ -58,18 +64,20 @@ int main(void) {
     EXTI->FTSR1 |= (1 << gpioPinOffset(QA_PIN));// Enable falling edge trigger for Quad A
     EXTI->FTSR1 |= (1 << gpioPinOffset(QB_PIN));// Enable falling edge trigger for Quad B
     // 4. Turn on EXTI interrupt in NVIC_ISER
-    NVIC->ISER[0] |= (1 << EXTI9_5_IQRn);// enable EXTI interrupts for pin 8
+    NVIC->ISER[0] |= (1 << EXTI9_5_IRQn);// enable EXTI interrupts for pin 8
     // NVIC->ISER[0] |= (1 << 23);
-    NVIC->ISER[1] |= (1 << EXTI15_10_IQRn);// enable EXTI interrupts for pin 10
+    NVIC->ISER[1] |= (1 << (EXTI15_10_IRQn - 32));// enable EXTI interrupts for pin 10
     // NVIC->ISER[1] |= (1 << (47 - 32));
 
     while(1){   
-        delay_millis(TIM2, 200);
+        delay_millis(TIM2, SAMPLE_PERIOD);
         pulses = intrCount / 4.0;
         sign = getSign();
-        rps = (pulses / PPR) / (SAMPLE_PERIOD / 1000);
+        rps = (pulses / PPR) / (SAMPLE_PERIOD / 1000.0);
         rps = sign ? -rps : rps;
         intrCount = 0;
+        //printf("Angular Velocity is %.5f RPS\n", rps);
+        //printf("%d", digitalRead(PA10));
     }
 
 }
@@ -81,6 +89,7 @@ void EXTI15_10_IRQHandler(void){
         EXTI->PR1 |= (1 << gpioPinOffset(QB_PIN));
 
         intrCount++;
+        printf("B interrupt!!\n");
 
         // do something to keep track of direction
         
@@ -94,6 +103,7 @@ void EXTI9_5_IRQHandler(void){
         EXTI->PR1 |= (1 << gpioPinOffset(QA_PIN));
         
         intrCount++;
+        printf("A interrupt!!\n");
         // do something to keep track of direction
 
     } 
