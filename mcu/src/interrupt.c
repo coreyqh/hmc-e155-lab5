@@ -8,10 +8,7 @@
 #include "main.h"
 
 int32_t intrCount = 0;
-
-uint8_t getSign() {
-    return 0; // just return positive for now
-} 
+uint8_t sign      = 0;
 
 // Function used by printf to send characters to the laptop
 int _write(int file, char *ptr, int len) {
@@ -72,12 +69,16 @@ int main(void) {
     while(1){   
         delay_millis(TIM2, SAMPLE_PERIOD);
         pulses = intrCount / 4.0;
-        sign = getSign();
         rps = (pulses / PPR) / (SAMPLE_PERIOD / 1000.0);
-        rps = sign ? -rps : rps;
+        // rps = sign ? -rps : rps;
+
         intrCount = 0;
-        printf("Angular Velocity is %.5f RPS\n", rps);
-        //printf("%d", digitalRead(PA10));
+        printf("Angular Velocity is %.5f RPS ", rps);
+        if (rps == 0) {
+            printf("\n") 
+        } else {
+            printf(sign ? "Clockwise\n" : "Counter-Clockwise\n")
+        }
     }
 
 }
@@ -89,9 +90,8 @@ void EXTI15_10_IRQHandler(void){
         EXTI->PR1 |= (1 << gpioPinOffset(QB_PIN));
 
         intrCount++;
-        // printf("B interrupt!!\n");
-
         // do something to keep track of direction
+        sign = digitalRead(QA_PIN) ^ digitalRead(QB_PIN);
         
     } 
 }
@@ -103,8 +103,8 @@ void EXTI9_5_IRQHandler(void){
         EXTI->PR1 |= (1 << gpioPinOffset(QA_PIN));
         
         intrCount++;
-        // printf("A interrupt!!\n");
         // do something to keep track of direction
+        sign = ~(digitalRead(QA_PIN) ^ digitalRead(QB_PIN));
 
     } 
 }
