@@ -72,13 +72,13 @@ int main(void) {
         rps = (pulses / PPR) / (SAMPLE_PERIOD / 1000.0);
         // rps = sign ? -rps : rps;
 
-        intrCount = 0;
         printf("Angular Velocity is %.5f RPS ", rps);
         if (rps == 0) {
             printf("\n") 
         } else {
             printf(sign ? "Clockwise\n" : "Counter-Clockwise\n")
         }
+        intrCount = 0;
     }
 
 }
