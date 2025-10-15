@@ -23,8 +23,6 @@ int main(void) {
 
     float    pulses    = 0;
     float    rps       = 0;
-    uint8_t  sign      = 0;
-
 
     // Enable both quad encoders as input
     gpioEnable(GPIO_PORT_A);
@@ -74,9 +72,10 @@ int main(void) {
 
         printf("Angular Velocity is %.5f RPS ", rps);
         if (rps == 0) {
-            printf("\n") 
+            printf("\n"); 
         } else {
-            printf(sign ? "Clockwise\n" : "Counter-Clockwise\n")
+            printf(sign ? "Clockwise\n" : "Counter-Clockwise\n");
+            //printf("SIGN IS: %d\n", sign);
         }
         intrCount = 0;
     }
@@ -91,8 +90,8 @@ void EXTI15_10_IRQHandler(void){
 
         intrCount++;
         // do something to keep track of direction
-        sign = digitalRead(QA_PIN) ^ digitalRead(QB_PIN);
-        
+        if (digitalRead(QA_PIN) ^ digitalRead(QB_PIN)) sign = 0;
+        //printf("B IRQ W SIGN = %d\n", sign);
     } 
 }
 
@@ -104,7 +103,7 @@ void EXTI9_5_IRQHandler(void){
         
         intrCount++;
         // do something to keep track of direction
-        sign = ~(digitalRead(QA_PIN) ^ digitalRead(QB_PIN));
-
+        if (digitalRead(QA_PIN) ^ digitalRead(QB_PIN)) sign = 1;
+        //printf("A IRQ W SIGN = %d\n", sign);
     } 
 }
