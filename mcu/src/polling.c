@@ -17,8 +17,8 @@
 
 //    int intrCount = 0;
 //    int sign      = 0;
-//    int pulses    = 0;
-//    int rps       = 0;
+//    float pulses    = 0;
+//    float rps       = 0;
 
 //   // Enable  output
 //    gpioEnable(GPIO_PORT_A);
