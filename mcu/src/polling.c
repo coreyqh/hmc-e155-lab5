@@ -40,10 +40,10 @@
 //   int volatile cur_B_state = digitalRead(QB_PIN);
 //   int volatile prev_B_state = cur_B_state;
 
-//   TIMx->ARR = SAMPLE_PERIOD; // Set timer max count (200 ms)
-//   TIMx->EGR |= 1;     // Force update
-//   TIMx->SR &= ~(0x1); // Clear UIF
-//   TIMx->CNT = 0;      // Reset count
+//   DELAY_TIM->ARR  = SAMPLE_PERIOD; // Set timer max count (200 ms)
+//   DELAY_TIM->EGR |= 1;     // Force update
+//   DELAY_TIM->SR  &= ~(0x1); // Clear UIF
+//   DELAY_TIM->CNT  = 0;      // Reset count
 //   while(1){
 //       prev_A_state = cur_A_state;
 //       cur_A_state = digitalRead(QA_PIN);
@@ -66,20 +66,20 @@
 
 //       togglePin(PA6); // to monitor how fast polling can happen!!!
 
-//       if (TIMx->SR & 1) { // timer done
+//       if (DELAY_TIM->SR & 1) { // timer done
 //          pulses = intrCount / 4.0;
 //          rps = (pulses / PPR) / (SAMPLE_PERIOD / 1000.0);
 //          printf("Angular Velocity is %.5f RPS ", rps);
 //          if (rps == 0) {
-//            printf("\n") 
+//            printf("\n");
 //          } else {
-//            printf(sign ? "Clockwise\n" : "Counter-Clockwise\n")
+//            printf(sign ? "Clockwise\n" : "Counter-Clockwise\n");
 //          }
 //        intrCount = 0;
-//        TIMx->ARR = SAMPLE_PERIOD; // Set timer max count (200 ms)
-//        TIMx->EGR |= 1;     // Force update
-//        TIMx->SR &= ~(0x1); // Clear UIF
-//        TIMx->CNT = 0;      // Reset count
+//        DELAY_TIM->ARR = SAMPLE_PERIOD; // Set timer max count (200 ms)
+//        DELAY_TIM->EGR |= 1;     // Force update
+//        DELAY_TIM->SR &= ~(0x1); // Clear UIF
+//        DELAY_TIM->CNT = 0;      // Reset count
 //       }
        
 //    //    delay_millis(DELAY_TIM, 200);
